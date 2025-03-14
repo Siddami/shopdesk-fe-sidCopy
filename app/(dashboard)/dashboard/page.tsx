@@ -58,8 +58,6 @@ declare module "@tanstack/react-table" {
     original_quantity?: number;
     supplier?: null | any;
     timeslots?: any[];
-    image?: { id: string; src: string } | null;
-    images?: { id: string; src: string }[]; 
   };
 
 const Page = () => {
@@ -98,7 +96,6 @@ const Page = () => {
   const totalPages = Math.ceil(totalItems / rowsPerPage);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
 
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
@@ -140,10 +137,8 @@ const Page = () => {
       prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
     );
 
-    setSelectedItem({...updatedItem});
     setOpenEdit(false); 
   };
-  
 
   const handleDeleteClick = (item: StockItem) => {
     setSelectedItem(item);
@@ -689,7 +684,7 @@ const table = useReactTable({
               )}                                                                
             </div>
             {isSidebarOpen && (
-              <Sidebar key={selectedItem?.id + '-' + (selectedItem?.images?.length || 0)} isOpen={isSidebarOpen} onClose={closeSidebar} selectedItem={selectedItem} onSave={handleSaveEdit}/>
+              <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} selectedItem={selectedItem} onSave={handleSaveEdit} />
             )}
           </div>
         </div>
