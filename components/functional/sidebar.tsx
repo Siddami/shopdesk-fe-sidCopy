@@ -2,9 +2,9 @@ import { StockItem } from "@/app/(dashboard)/dashboard/page";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import EditItemModal from "@/components/modal/edit-stock";
+import ImageUploader from "@/components/modal/add-image";
 import { Button } from "@/components/ui/button";
 /* import Image from "next/image"; */
-
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,14 +13,35 @@ interface SidebarProps {
   onSave: (updatedItem: StockItem) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, selectedItem, onSave }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  isOpen,
+  onClose,
+  selectedItem,
+  onSave,
+}) => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [isImageUploaderOpen, setImageUploaderOpen] = useState(false);
 
   if (!isOpen || !selectedItem) return null;
 
   const openEditModal = () => setEditModalOpen(true);
   const closeEditModal = () => setEditModalOpen(false);
 
+  const openImageUploader = () => setImageUploaderOpen(true);
+  const closeImageUploader = () => setImageUploaderOpen(false);
+
+  // Handle saving images from the uploader
+  const handleSaveImages = (images: { id: string; src: string }[]) => {
+    const updatedItem = {
+      ...selectedItem,
+      images: images,
+      image: images.length > 0 ? images[0] : null,
+    };
+
+    onSave(updatedItem);
+    closeImageUploader();
+    
+  };
 
   return (
     <>
@@ -29,21 +50,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, selectedItem, onSave
           <p className="font-circular-medium text-2xl leading-9">
             {selectedItem.name}
           </p>
-          <button onClick={onClose} className="p-[9px] bg-neutral-200 rounded-md">
+          <button
+            onClick={onClose}
+            className="p-[9px] bg-neutral-200 rounded-md"
+          >
             <X size={16} />
           </button>
         </div>
 
         {/* Mobile */}
         <div className="flex items-center justify-between border-b border-b-[#DEE5ED] w-full md:hidden">
-          <p className="font-circular-medium text-xl leading-9">
-            Edit Stock
-          </p>
-          <button onClick={onClose} className="p-[7px] bg-neutral-200 rounded-md">
+          <p className="font-circular-medium text-xl leading-9">Edit Stock</p>
+          <button
+            onClick={onClose}
+            className="p-[7px] bg-neutral-200 rounded-md"
+          >
             <X size={13} />
           </button>
         </div>
-
 
         <div className="flex flex-col md:py-5 md:px-4 items-start gap-5 w-full">
           {/* Product */}
@@ -109,6 +133,43 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, selectedItem, onSave
               Edit
             </p>
           </div>
+
+          {/* Image */}
+          <div className="flex p-3 items-start gap-5 rounded-md md:border md:border-[#E9EEF3] md:bg-[#F8FAFB] w-full">
+            <div className="flex flex-col gap-1 w-2/3">
+              <p className="text-[#717171] text-base md:text-lg font-circular-normal leading-7">
+                Image
+              </p>
+              {!selectedItem.images || selectedItem.images.length === 0 ? (
+                <p className="text-[#2A2A2A] text-lg md:text-xl leading-7.5 font-circular-normal">
+                  Not Set
+                </p>
+              ) : (
+                <div className="flex items-center space-x-1 mt-1">
+                  {selectedItem.images.map((img, index) => (
+                    <div
+                      key={img.id}
+                      className="relative border rounded-lg p-1 w-10 h-10 flex items-center justify-center"
+                    >
+                      <img
+                        src={img.src}
+                        alt={`Product image ${index + 1}`}
+                        className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p
+              className="text-black md:text-[#009A49] font-circular-normal text-sm md:text-base leading-6 cursor-pointer md:w-1/3 text-right border border-[#A0A0A0] rounded-xl py-3 px-6 md:py-0 md:px-0 md:border-none"
+              onClick={openImageUploader}
+            >
+              {selectedItem.images && selectedItem.images.length > 0
+                ? "Edit"
+                : "Add"}
+            </p>
+          </div>
         </div>
 
         <div className="w-full h-full p-4 flex flex-col md:hidden gap-4 mt-11">
@@ -130,21 +191,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, selectedItem, onSave
             Delete stock
           </Button>
         </div>
-
       </div>
 
       {/* Edit Modal */}
       {isEditModalOpen && (
         <EditItemModal
           isOpen={isEditModalOpen}
-          item={selectedItem} 
+          item={selectedItem}
           onClose={closeEditModal}
           onSave={(updatedItem) => {
             onSave(updatedItem);
             closeEditModal();
           }}
-          />
+        />
       )}
+      {/* Image Uploader Modal */}
+      <ImageUploader
+        isOpen={isImageUploaderOpen}
+        itemName={selectedItem.name}
+        existingImages={selectedItem.images || []}
+        onSave={handleSaveImages}
+        onCancel={closeImageUploader}
+      />
     </>
   );
 };
